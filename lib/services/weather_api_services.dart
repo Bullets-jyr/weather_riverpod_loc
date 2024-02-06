@@ -39,6 +39,36 @@ class WeatherApiServices {
     }
   }
 
+  Future<String> getReverseGeocoding(double lat, double lon) async {
+    try {
+      final Response response = await dio.get(
+        '/geo/1.0/reverse',
+        queryParameters: {
+          'lat': '$lat',
+          'lon': '$lon',
+          'units': kUnit,
+          'appid': dotenv.env['APPID'],
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw dioErrorHandler(response);
+      }
+
+      final List result = response.data;
+
+      if (result.isEmpty) {
+        throw WeatherException(
+            'Cannot get the name of the location($lat, $lon)');
+      }
+
+      final city = result[0]['name'];
+      return city;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<CurrentWeather> getWeather(DirectGeocoding directGeocoding) async {
     try {
       final Response response = await dio.get(
